@@ -1,0 +1,19 @@
+{
+    "dependencies": {
+        "cors": "^2.8.5",
+        "express": "^4.19.2",
+        "hygen": "^6.2.11",
+        "pg": "^8.11.5",
+        "winston": "^3.13.0"
+    },
+    "name": "correcao-de-financiamentos-backend",
+    "description": "Esse projeto visa dar suporte para que pessoas entendam o impacto da correção monetária em financiamentos.",
+    "version": "1.0.0",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC"
+}
