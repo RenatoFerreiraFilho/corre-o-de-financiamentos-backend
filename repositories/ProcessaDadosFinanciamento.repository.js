@@ -4,8 +4,7 @@ async function insertProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
     const conn = await connect();
     try {
         /* editar query: */
-        const sql =
-            "INSERT INTO clients (name, cpf) VALUES ($1, $2) RETURNING *";
+        const sql = "INSERT INTO logs (name, cpf) VALUES ($1, $2) RETURNING *";
         /* inserir campos do banco de dados: */
         const values = [
             ProcessaDadosFinanciamento.name,
@@ -21,11 +20,12 @@ async function insertProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
     }
 }
 
-async function getProcessaDadosFinanciamentos() {
+async function getIndiceInflacao(indice, data) {
     const conn = await connect();
     try {
-        /* editar query: */
-        const res = await conn.query("SELECT * FROM clients");
+        const res = await conn.query(
+            `SELECT ${indice} FROM indices WHERE data = ${data}`
+        );
 
         return res.rows;
     } catch (err) {
@@ -37,5 +37,5 @@ async function getProcessaDadosFinanciamentos() {
 
 export default {
     insertProcessaDadosFinanciamento,
-    getProcessaDadosFinanciamentos,
+    getIndiceInflacao,
 };
