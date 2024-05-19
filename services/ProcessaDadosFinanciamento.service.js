@@ -1,48 +1,95 @@
 import ProcessaDadosFinanciamentoRepository from "../repositories/ProcessaDadosFinanciamento.repository.js";
 
 async function createProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
-    //valorFinanciado
+    //sistemaFinanciamento
     //taxaDeJuros
     //tipoTaxaDeJuros
     //numeroPrestacoes
     //indiceCorrecao
     //valorPrimeiraParcela
-    const parcelaCincoAnosAtras
-    const valorPagoCincoAnosAtras// mar/19 - mar/24
-    const saldoDevedorCincoAnosAtras
+    const taxaDeJurosMensal =
+        ProcessaDadosFinanciamento.tipoTaxaDeJuros === "ANUAL"
+            ? mensalizaTaxaAnual(ProcessaDadosFinanciamento.taxaDeJuros)
+            : ProcessaDadosFinanciamento.taxaDeJuros;
 
-    const parcelaDezAnosAtras
-    const valorPagoDezAnosAtras
-    const saldoDevedorDezAnosAtras
-
-    const parcelaQuinzeAnosAtras
-    const valorPagoQuinzeAnosAtras
-    const saldoDevedorQuinzeAnosAtras
-
-    const indiceCorrecaoAtual = await ProcessaDadosFinanciamentoRepository.getIndiceInflacao(ProcessaDadosFinanciamento.indiceCorrecao, "2024-03-01")
-
-    const indiceCorrecaoBaseCincoAnos = await ProcessaDadosFinanciamentoRepository.getIndiceInflacao(ProcessaDadosFinanciamento.indiceCorrecao, "2019-03-01")
-    const inflacaoAcumuladaCincoAnos = indiceCorrecaoAtual / indiceCorrecaoBaseCincoAnos
-
-    const indiceCorrecaoBaseDezAnos = await ProcessaDadosFinanciamentoRepository.getIndiceInflacao(ProcessaDadosFinanciamento.indiceCorrecao, "2019-03-01")
-    const inflacaoAcumuladaDezAnos = indiceCorrecaoAtual / indiceCorrecaoBaseDezAnos
-
-    const indiceCorrecaoBaseQuinzeAnos = await ProcessaDadosFinanciamentoRepository.getIndiceInflacao(ProcessaDadosFinanciamento.indiceCorrecao, "2019-03-01")
-    const inflacaoAcumuladaQuinzeAnos = indiceCorrecaoAtual / indiceCorrecaoBaseQuinzeAnos
-
-    if (tipoFinanciamento === "PRICE"){
-        parcelaCincoAnosAtras = ProcessaDadosFinanciamento.valorPrimeiraParcela * inflacaoAcumuladaCincoAnos
-        parcelaDezAnosAtras = ProcessaDadosFinanciamento.valorPrimeiraParcela * inflacaoAcumuladaDezAnos
-        parcelaQuinzeAnosAtras = ProcessaDadosFinanciamento.valorPrimeiraParcela * inflacaoAcumuladaQuinzeAnos
-    }
-    if (tipoFinanciamento === "SAC"){
-
-    }
-
-
-    return await ProcessaDadosFinanciamentoRepository.insertProcessaDadosFinanciamento(
-        ProcessaDadosFinanciamento
+    const mesInicialFluxoCincoAnos = calculaMesInicial(5);
+    const mesInicialFluxoDezAnos = calculaMesInicial(10);
+    const mesInicialFluxoQuinzeAnos = calculaMesInicial(15);
+    const valorFinanciado = calculaValorFinanciado(
+        ProcessaDadosFinanciamento.sistemaFinanciamento,
+        taxaDeJurosMensal,
+        ProcessaDadosFinanciamento.numeroPrestacoes,
+        ProcessaDadosFinanciamento.valorPrimeiraParcela
     );
+
+    const fluxoFinanciamentoCincoAnos = geraFluxoFinanciamento(
+        mesInicialFluxoCincoAnos,
+        ProcessaDadosFinanciamento.sistemaFinanciamento,
+        taxaDeJurosMensal,
+        ProcessaDadosFinanciamento.numeroPrestacoes,
+        ProcessaDadosFinanciamento.indiceCorrecao,
+        ProcessaDadosFinanciamento.valorPrimeiraParcela
+    );
+    const fluxoFinanciamentoDezAnos = geraFluxoFinanciamento(
+        mesInicialFluxoDezAnos,
+        ProcessaDadosFinanciamento.sistemaFinanciamento,
+        taxaDeJurosMensal,
+        ProcessaDadosFinanciamento.numeroPrestacoes,
+        ProcessaDadosFinanciamento.indiceCorrecao,
+        ProcessaDadosFinanciamento.valorPrimeiraParcela
+    );
+    const fluxoFinanciamentoQuinzeAnos = geraFluxoFinanciamento(
+        mesInicialFluxoQuinzeAnos,
+        ProcessaDadosFinanciamento.sistemaFinanciamento,
+        taxaDeJurosMensal,
+        ProcessaDadosFinanciamento.numeroPrestacoes,
+        ProcessaDadosFinanciamento.indiceCorrecao,
+        ProcessaDadosFinanciamento.valorPrimeiraParcela
+    );
+
+    //Resultados para cinco anos:
+    const parcelaCincoAnosAtras = retornaParcelaNaData(fluxoFinanciamentoCincoAnos, "2024-03-01");
+    const valorPagoCincoAnosAtras = retornaSomaValorPagoNoIntervalo(
+        fluxoFinanciamentoCincoAnos,
+        mesInicialFluxoCincoAnos,
+        "2024-03-01"
+    );
+    const saldoDevedorCincoAnosAtras = retornaSaldoDevedorNaData(fluxoFinanciamentoCincoAnos, "2024-03-01");
+
+    //Resultados para dez anos:
+    const parcelaDezAnosAtras = retornaParcelaNaData(fluxoFinanciamentoDezAnos, "2024-03-01");
+    const valorPagoDezAnosAtras = retornaSomaValorPagoNoIntervalo(
+        fluxoFinanciamentoDezAnos,
+        mesInicialFluxoDezAnos,
+        "2024-03-01"
+    );
+    const saldoDevedorDezAnosAtras = retornaSaldoDevedorNaData(fluxoFinanciamentoDezAnos, "2024-03-01");
+
+    //Resultados para quinze anos:
+    const parcelaQuinzeAnosAtras = retornaParcelaNaData(fluxoFinanciamentoQuinzeAnos, "2024-03-01");
+    const valorPagoQuinzeAnosAtras = retornaSomaValorPagoNoIntervalo(
+        fluxoFinanciamentoQuinzeAnos,
+        mesInicialFluxoDezAnos,
+        "2024-03-01"
+    );
+    const saldoDevedorQuinzeAnosAtras = retornaSaldoDevedorNaData(fluxoFinanciamentoQuinzeAnos, "2024-03-01");
+
+    return {
+        valorFinanciado: valorFinanciado,
+        parcelaCincoAnosAtras: parcelaCincoAnosAtras,
+        valorPagoCincoAnosAtras: valorPagoCincoAnosAtras,
+        saldoDevedorCincoAnosAtras: saldoDevedorCincoAnosAtras,
+        parcelaDezAnosAtras: parcelaDezAnosAtras,
+        valorPagoDezAnosAtras: valorPagoDezAnosAtras,
+        saldoDevedorDezAnosAtras: saldoDevedorDezAnosAtras,
+        parcelaQuinzeAnosAtras: parcelaQuinzeAnosAtras,
+        valorPagoQuinzeAnosAtras: valorPagoQuinzeAnosAtras,
+        saldoDevedorQuinzeAnosAtras: saldoDevedorQuinzeAnosAtras,
+    };
+}
+
+function mensalizaTaxaAnual(taxaAnual) {
+    return (1 + taxaAnual) ** (1 / 12) - 1;
 }
 
 export default {
