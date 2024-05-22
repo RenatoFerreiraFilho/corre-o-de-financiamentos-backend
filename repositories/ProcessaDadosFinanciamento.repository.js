@@ -11,8 +11,15 @@ const __dirname = path.dirname(__filename);
 const diretorioDadosExcel = `${__dirname}/indices.xlsx`;
 
 async function getDataTable() {
-    const res = await conn.query(`SELECT * FROM indices_de_correcao`);
-    return res.rows;
+    const conn = await connect();
+    try {
+        const res = await conn.query(`SELECT * FROM indices_de_correcao`);
+        return res.rows;
+    } catch (err) {
+        throw err;
+    } finally {
+        conn.release();
+    }
 }
 
 async function insertDataTable() {
