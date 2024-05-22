@@ -1,5 +1,12 @@
 import ProcessaDadosFinanciamentoService from "../services/ProcessaDadosFinanciamento.service.js";
 
+async function createTable(req, res, next) {
+    try {
+        res.send(await ProcessaDadosFinanciamentoService.createTable());
+    } catch (err) {
+        next(err);
+    }
+}
 async function createProcessaDadosFinanciamento(req, res, next) {
     try {
         let ProcessaDadosFinanciamento = req.body;
@@ -33,4 +40,5 @@ async function createProcessaDadosFinanciamento(req, res, next) {
 
 export default {
     createProcessaDadosFinanciamento,
+    createTable,
 };

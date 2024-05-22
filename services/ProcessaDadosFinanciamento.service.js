@@ -1,5 +1,8 @@
 import ProcessaDadosFinanciamentoRepository from "../repositories/ProcessaDadosFinanciamento.repository.js";
 
+async function createTable() {
+    await ProcessaDadosFinanciamentoRepository.createTable();
+}
 async function createProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
     //sistemaFinanciamento
     //taxaDeJuros

@@ -9,10 +9,7 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
 });
 global.logger = winston.createLogger({
     level: "silly",
-    transports: [
-        new winston.transports.Console(),
-        new winston.transports.File({ filename: "server-api.log" }),
-    ],
+    transports: [new winston.transports.Console(), new winston.transports.File({ filename: "server-api.log" })],
     format: combine(label({ label: "server-api" }), timestamp(), myFormat),
 });
 
