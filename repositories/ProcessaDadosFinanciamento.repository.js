@@ -25,7 +25,7 @@ async function getDataTable() {
 async function insertDataTable() {
     const conn = await connect();
     try {
-        await conn.query(`TRUNCATE TABLE indices_de_correcao`, values);
+        await conn.query(`TRUNCATE TABLE indices_de_correcao`);
         const workbook = xlsx.readFile(diretorioDadosExcel);
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
