@@ -25,6 +25,7 @@ async function getDataTable() {
 async function insertDataTable() {
     const conn = await connect();
     try {
+        await conn.query(`TRUNCATE TABLE indices_de_correcao`, values);
         const workbook = xlsx.readFile(diretorioDadosExcel);
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
@@ -32,6 +33,7 @@ async function insertDataTable() {
 
         for (let row of data) {
             const { data_calendario, IPCA, IGPM, INCC } = row;
+            console.log(row);
             const query = `
                 INSERT INTO indices_de_correcao (data_calendario, IPCA, IGPM, INCC)
                 VALUES ($1, $2, $3, $4)
@@ -49,7 +51,7 @@ async function insertDataTable() {
         //     INCC NUMERIC(10, 2)
         // );
         // `;
-        // const res = await conn.query(sql);
+        const res = await conn.query(sql);
         return data;
     } catch (err) {
         throw err;
