@@ -7,6 +7,7 @@ async function connect() {
     const pool = new pg.Pool({
         /* Editar connectionString: */
         connectionString: "postgres://bdcorrecao_user:SRkecj0V46vNoryCcFZEGXyzYnYvDKi9@dpg-cp6r936v3ddc73fp1ocg-a/bdcorrecao",
+        // connectionString: "postgres://bdcorrecao_user:SRkecj0V46vNoryCcFZEGXyzYnYvDKi9@dpg-cp6r936v3ddc73fp1ocg-a.oregon-postgres.render.com/bdcorrecao",
     });
     global.connection = pool;
     return pool.connect();

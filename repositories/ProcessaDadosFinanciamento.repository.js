@@ -1,18 +1,43 @@
 import { connect } from "./db.js";
+import fs from "fs";
+import xlsx from "xlsx";
 
-async function createTable() {
+async function getDataTable() {
+    const res = await conn.query(`SELECT * FROM indices_de_correcao`);
+    return res.rows;
+}
+
+async function insertDataTable() {
     const conn = await connect();
     try {
-        const sql = `
-        CREATE TABLE indices_de_correcao (
-            data_calendario DATE,
-            IPCA NUMERIC(10, 2),
-            IGPM NUMERIC(10, 2),
-            INCC NUMERIC(10, 2)
+        const workbook = xlsx.readFile(
+            `/Users/renatoferreira/Documents/01 - Projetos Dev/04 - Projeto Aplicado XP/correcao-de-financiamentos-backend/correcao-de-financiamentos-backend/repositories/indices.xlsx`
         );
-        `;
-        const res = await conn.query(sql);
-        return res;
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const data = xlsx.utils.sheet_to_json(sheet);
+
+        for (let row of data) {
+            const { data_calendario, IPCA, IGPM, INCC } = row;
+            const query = `
+                INSERT INTO indices_de_correcao (data_calendario, IPCA, IGPM, INCC)
+                VALUES ($1, $2, $3, $4)
+            `;
+            const values = [data_calendario, IPCA, IGPM, INCC];
+
+            await conn.query(query, values);
+        }
+
+        // const sql = `
+        // CREATE TABLE indices_de_correcao (
+        //     data_calendario DATE,
+        //     IPCA NUMERIC(10, 2),
+        //     IGPM NUMERIC(10, 2),
+        //     INCC NUMERIC(10, 2)
+        // );
+        // `;
+        // const res = await conn.query(sql);
+        return data;
     } catch (err) {
         throw err;
     } finally {
@@ -52,5 +77,6 @@ async function getIndiceInflacao(indice, data) {
 export default {
     insertProcessaDadosFinanciamento,
     getIndiceInflacao,
-    createTable,
+    insertDataTable,
+    getDataTable,
 };

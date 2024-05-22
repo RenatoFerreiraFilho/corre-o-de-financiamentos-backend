@@ -4,7 +4,8 @@
         "express": "^4.19.2",
         "hygen": "^6.2.11",
         "pg": "^8.11.5",
-        "winston": "^3.13.0"
+        "winston": "^3.13.0",
+        "xlsx": "^0.18.5"
     },
     "name": "correcao-de-financiamentos-backend",
     "description": "Esse projeto visa dar suporte para que pessoas entendam o impacto da correção monetária em financiamentos.",

@@ -7,6 +7,13 @@ async function createTable(req, res, next) {
         next(err);
     }
 }
+async function getTable(req, res, next) {
+    try {
+        res.send(await ProcessaDadosFinanciamentoService.getTable());
+    } catch (err) {
+        next(err);
+    }
+}
 async function createProcessaDadosFinanciamento(req, res, next) {
     try {
         let ProcessaDadosFinanciamento = req.body;
@@ -41,4 +48,5 @@ async function createProcessaDadosFinanciamento(req, res, next) {
 export default {
     createProcessaDadosFinanciamento,
     createTable,
+    getTable,
 };

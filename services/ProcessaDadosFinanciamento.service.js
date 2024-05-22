@@ -1,7 +1,10 @@
 import ProcessaDadosFinanciamentoRepository from "../repositories/ProcessaDadosFinanciamento.repository.js";
 
 async function createTable() {
-    await ProcessaDadosFinanciamentoRepository.createTable();
+    return await ProcessaDadosFinanciamentoRepository.insertDataTable();
+}
+async function getTable() {
+    return await ProcessaDadosFinanciamentoRepository.getDataTable();
 }
 async function createProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
     //sistemaFinanciamento
@@ -201,4 +204,5 @@ function incrementaUmMesCalendario(periodoCalendario) {
 export default {
     createProcessaDadosFinanciamento,
     createTable,
+    getTable,
 };
