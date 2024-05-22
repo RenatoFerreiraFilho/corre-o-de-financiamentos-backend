@@ -52,4 +52,5 @@ async function getIndiceInflacao(indice, data) {
 export default {
     insertProcessaDadosFinanciamento,
     getIndiceInflacao,
+    createTable,
 };

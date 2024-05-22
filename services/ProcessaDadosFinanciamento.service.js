@@ -200,4 +200,5 @@ function incrementaUmMesCalendario(periodoCalendario) {
 }
 export default {
     createProcessaDadosFinanciamento,
+    createTable,
 };
