@@ -2,6 +2,14 @@ import { connect } from "./db.js";
 import fs from "fs";
 import xlsx from "xlsx";
 
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const diretorioDadosExcel = `${__dirname}/indices.xlsx`;
+
 async function getDataTable() {
     const res = await conn.query(`SELECT * FROM indices_de_correcao`);
     return res.rows;
@@ -10,9 +18,7 @@ async function getDataTable() {
 async function insertDataTable() {
     const conn = await connect();
     try {
-        const workbook = xlsx.readFile(
-            `/Users/renatoferreira/Documents/01 - Projetos Dev/04 - Projeto Aplicado XP/correcao-de-financiamentos-backend/correcao-de-financiamentos-backend/repositories/indices.xlsx`
-        );
+        const workbook = xlsx.readFile(diretorioDadosExcel);
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
         const data = xlsx.utils.sheet_to_json(sheet);
