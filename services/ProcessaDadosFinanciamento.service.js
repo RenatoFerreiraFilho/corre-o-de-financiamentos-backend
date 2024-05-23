@@ -115,6 +115,7 @@ async function geraFluxoFinanciamento(valorFinanciado, mesInicialDoFluxo, sistem
         boolCorrige = i === 0 ? false : true;
         parcelaMesAnterior = i === 0 ? valorPrimeiraParcela : parcelaMesCorrente;
         indiceDoMes = await ProcessaDadosFinanciamentoRepository.getIndiceInflacao(indiceDeCorrecao, periodoCalendario);
+        console.log(indiceDoMes);
         correcaoPeriodo = i === 0 ? 0 : indiceDoMes / indiceDoMesAnterior - 1;
         correcaoLatente = i === 0 ? 0 : boolCorrigeMesAnterior === false ? (1 + correcaoLatenteMesAnterior) * (1 + correcaoPeriodo) - 1 : correcaoPeriodo;
         fluxo_saldoInicialPeriodo = i === 0 ? valorFinanciado : fluxo_saldoFinalPeriodo;
