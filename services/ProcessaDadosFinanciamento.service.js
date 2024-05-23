@@ -14,7 +14,7 @@ async function createProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
         ProcessaDadosFinanciamento.valorPrimeiraParcela
     );
 
-    const fluxoFinanciamentoCincoAnos = geraFluxoFinanciamento(
+    const fluxoFinanciamentoCincoAnos = await geraFluxoFinanciamento(
         valorFinanciado,
         mesInicialFluxoCincoAnos,
         ProcessaDadosFinanciamento.sistemaFinanciamento,
