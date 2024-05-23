@@ -1,18 +1,6 @@
 import ProcessaDadosFinanciamentoRepository from "../repositories/ProcessaDadosFinanciamento.repository.js";
 
-async function createTable() {
-    return await ProcessaDadosFinanciamentoRepository.insertDataTable();
-}
-async function getTable() {
-    return await ProcessaDadosFinanciamentoRepository.getDataTable();
-}
 async function createProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
-    //sistemaFinanciamento
-    //taxaDeJuros
-    //tipoTaxaDeJuros
-    //numeroPrestacoes
-    //indiceCorrecao
-    //valorPrimeiraParcela
     const taxaDeJurosMensal =
         ProcessaDadosFinanciamento.tipoTaxaDeJuros === "ANUAL" ? mensalizaTaxaAnual(ProcessaDadosFinanciamento.taxaDeJuros) : ProcessaDadosFinanciamento.taxaDeJuros;
 
@@ -174,6 +162,7 @@ async function geraFluxoFinanciamento(valorFinanciado, mesInicialDoFluxo, sistem
 }
 
 function retornaParcelaNaData(fluxoFinanciamento, data) {
+    console.log(fluxoFinanciamento);
     const fluxoNaData = fluxoFinanciamento.filter((a) => a.periodoCalendario === data);
     return fluxoNaData.parcelaMesCorrente;
 }
@@ -190,7 +179,7 @@ function retornaSaldoDevedorNaData(fluxoFinanciamento, data) {
 }
 
 function incrementaUmMesCalendario(periodoCalendario) {
-    const [ano, mes, dia] = dateString.split("-").map(Number);
+    const [ano, mes, dia] = periodoCalendario.split("-").map(Number);
     const date = new Date(ano, mes - 1, dia);
 
     date.setMonth(date.getMonth() + 1);
@@ -203,6 +192,4 @@ function incrementaUmMesCalendario(periodoCalendario) {
 }
 export default {
     createProcessaDadosFinanciamento,
-    createTable,
-    getTable,
 };
