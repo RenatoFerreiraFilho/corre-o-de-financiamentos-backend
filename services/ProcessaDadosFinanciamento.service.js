@@ -2,7 +2,7 @@ import ProcessaDadosFinanciamentoRepository from "../repositories/ProcessaDadosF
 
 async function createProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
     const taxaDeJurosMensal =
-        ProcessaDadosFinanciamento.tipoTaxaDeJuros === "ANUAL" ? mensalizaTaxaAnual(ProcessaDadosFinanciamento.taxaDeJuros) : ProcessaDadosFinanciamento.taxaDeJuros;
+        ProcessaDadosFinanciamento.tipoTaxaDeJuros === "anual" ? mensalizaTaxaAnual(ProcessaDadosFinanciamento.taxaDeJuros) : ProcessaDadosFinanciamento.taxaDeJuros;
 
     const mesInicialFluxoCincoAnos = calculaMesInicial(5);
     const mesInicialFluxoDezAnos = calculaMesInicial(10);
@@ -13,8 +13,11 @@ async function createProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
         ProcessaDadosFinanciamento.numeroPrestacoes,
         ProcessaDadosFinanciamento.valorPrimeiraParcela
     );
+    const dataAtual = "2024-03-01"; //usada para gerar o valor da parcela atual, e para parar o fluxo de financiamento
+    //usar data que seja garantida a presença de índice de correção
 
     const fluxoFinanciamentoCincoAnos = await geraFluxoFinanciamento(
+        dataAtual,
         valorFinanciado,
         mesInicialFluxoCincoAnos,
         ProcessaDadosFinanciamento.sistemaFinanciamento,
@@ -23,7 +26,8 @@ async function createProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
         ProcessaDadosFinanciamento.indiceCorrecao,
         ProcessaDadosFinanciamento.valorPrimeiraParcela
     );
-    const fluxoFinanciamentoDezAnos = geraFluxoFinanciamento(
+    const fluxoFinanciamentoDezAnos = await geraFluxoFinanciamento(
+        dataAtual,
         valorFinanciado,
         mesInicialFluxoDezAnos,
         ProcessaDadosFinanciamento.sistemaFinanciamento,
@@ -32,7 +36,8 @@ async function createProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
         ProcessaDadosFinanciamento.indiceCorrecao,
         ProcessaDadosFinanciamento.valorPrimeiraParcela
     );
-    const fluxoFinanciamentoQuinzeAnos = geraFluxoFinanciamento(
+    const fluxoFinanciamentoQuinzeAnos = await geraFluxoFinanciamento(
+        dataAtual,
         valorFinanciado,
         mesInicialFluxoQuinzeAnos,
         ProcessaDadosFinanciamento.sistemaFinanciamento,
@@ -43,32 +48,33 @@ async function createProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
     );
 
     //Resultados para cinco anos:
-    const parcelaCincoAnosAtras = retornaParcelaNaData(fluxoFinanciamentoCincoAnos, "2024-03-01");
-    const valorPagoCincoAnosAtras = retornaSomaValorPagoNoIntervalo(fluxoFinanciamentoCincoAnos, mesInicialFluxoCincoAnos, "2024-03-01");
-    const saldoDevedorCincoAnosAtras = retornaSaldoDevedorNaData(fluxoFinanciamentoCincoAnos, "2024-03-01");
+    const parcelaCincoAnosAtras = retornaParcelaNaData(fluxoFinanciamentoCincoAnos, dataAtual);
+    const valorPagoCincoAnosAtras = retornaSomaValorPagoNoIntervalo(fluxoFinanciamentoCincoAnos, mesInicialFluxoCincoAnos, dataAtual);
+    const saldoDevedorCincoAnosAtras = retornaSaldoDevedorNaData(fluxoFinanciamentoCincoAnos, dataAtual);
 
     //Resultados para dez anos:
-    const parcelaDezAnosAtras = retornaParcelaNaData(fluxoFinanciamentoDezAnos, "2024-03-01");
-    const valorPagoDezAnosAtras = retornaSomaValorPagoNoIntervalo(fluxoFinanciamentoDezAnos, mesInicialFluxoDezAnos, "2024-03-01");
-    const saldoDevedorDezAnosAtras = retornaSaldoDevedorNaData(fluxoFinanciamentoDezAnos, "2024-03-01");
+    const parcelaDezAnosAtras = retornaParcelaNaData(fluxoFinanciamentoDezAnos, dataAtual);
+    const valorPagoDezAnosAtras = retornaSomaValorPagoNoIntervalo(fluxoFinanciamentoDezAnos, mesInicialFluxoDezAnos, dataAtual);
+    const saldoDevedorDezAnosAtras = retornaSaldoDevedorNaData(fluxoFinanciamentoDezAnos, dataAtual);
 
     //Resultados para quinze anos:
-    const parcelaQuinzeAnosAtras = retornaParcelaNaData(fluxoFinanciamentoQuinzeAnos, "2024-03-01");
-    const valorPagoQuinzeAnosAtras = retornaSomaValorPagoNoIntervalo(fluxoFinanciamentoQuinzeAnos, mesInicialFluxoDezAnos, "2024-03-01");
-    const saldoDevedorQuinzeAnosAtras = retornaSaldoDevedorNaData(fluxoFinanciamentoQuinzeAnos, "2024-03-01");
+    const parcelaQuinzeAnosAtras = retornaParcelaNaData(fluxoFinanciamentoQuinzeAnos, dataAtual);
+    const valorPagoQuinzeAnosAtras = retornaSomaValorPagoNoIntervalo(fluxoFinanciamentoQuinzeAnos, mesInicialFluxoQuinzeAnos, dataAtual);
+    const saldoDevedorQuinzeAnosAtras = retornaSaldoDevedorNaData(fluxoFinanciamentoQuinzeAnos, dataAtual);
 
-    return {
-        valorFinanciado: valorFinanciado,
-        parcelaCincoAnosAtras: parcelaCincoAnosAtras,
-        valorPagoCincoAnosAtras: valorPagoCincoAnosAtras,
-        saldoDevedorCincoAnosAtras: saldoDevedorCincoAnosAtras,
-        parcelaDezAnosAtras: parcelaDezAnosAtras,
-        valorPagoDezAnosAtras: valorPagoDezAnosAtras,
-        saldoDevedorDezAnosAtras: saldoDevedorDezAnosAtras,
-        parcelaQuinzeAnosAtras: parcelaQuinzeAnosAtras,
-        valorPagoQuinzeAnosAtras: valorPagoQuinzeAnosAtras,
-        saldoDevedorQuinzeAnosAtras: saldoDevedorQuinzeAnosAtras,
+    const resp = {
+        valorFinanciado: valorFinanciado.toFixed(2),
+        parcelaCincoAnosAtras: parcelaCincoAnosAtras.toFixed(2),
+        valorPagoCincoAnosAtras: valorPagoCincoAnosAtras.toFixed(2),
+        saldoDevedorCincoAnosAtras: saldoDevedorCincoAnosAtras.toFixed(2),
+        parcelaDezAnosAtras: parcelaDezAnosAtras.toFixed(2),
+        valorPagoDezAnosAtras: valorPagoDezAnosAtras.toFixed(2),
+        saldoDevedorDezAnosAtras: saldoDevedorDezAnosAtras.toFixed(2),
+        parcelaQuinzeAnosAtras: parcelaQuinzeAnosAtras.toFixed(2),
+        valorPagoQuinzeAnosAtras: valorPagoQuinzeAnosAtras.toFixed(2),
+        saldoDevedorQuinzeAnosAtras: saldoDevedorQuinzeAnosAtras.toFixed(2),
     };
+    return resp;
 }
 
 function mensalizaTaxaAnual(taxaAnual) {
@@ -79,28 +85,38 @@ function calculaMesInicial(numeroDeAnosAtras) {
     //Futuramente, implementar lógica em que a data atual fique dinâmica.
     //Para isso, será necessário abastecer o Banco de Dados dos índices de inflação dinamicamente
     if (numeroDeAnosAtras === 5) {
-        return "2019-03-01";
+        return "2019-04-01";
     }
     if (numeroDeAnosAtras === 10) {
-        return "2014-03-01";
+        return "2014-04-01";
     }
     if (numeroDeAnosAtras === 15) {
-        return "2009-03-01";
+        return "2009-04-01";
     }
 }
 
 function calculaValorFinanciado(sistemaDeFinanciamento, taxaDeJuros, numeroPrestacoes, valorPrimeiraParcela) {
-    if (sistemaDeFinanciamento === "PRICE") {
+    if (sistemaDeFinanciamento === "price") {
         return (valorPrimeiraParcela * ((1 + taxaDeJuros) ** numeroPrestacoes - 1)) / ((1 + taxaDeJuros) ** numeroPrestacoes * taxaDeJuros);
     }
-    if (sistemaDeFinanciamento === "SAC") {
+    if (sistemaDeFinanciamento === "sac") {
         return valorPrimeiraParcela / (1 / numeroPrestacoes + taxaDeJuros);
     }
 }
 
-async function geraFluxoFinanciamento(valorFinanciado, mesInicialDoFluxo, sistemaFinanciamento, taxaDeJuros, numeroPrestacoes, indiceDeCorrecao, valorPrimeiraParcela) {
+async function geraFluxoFinanciamento(dataAtual, valorFinanciado, mesInicialDoFluxo, sistemaFinanciamento, taxaDeJuros, numeroPrestacoes, indiceDeCorrecao, valorPrimeiraParcela) {
     const fluxoFinanciamento = [];
-    var periodoN, periodoCalendario, boolCorrige, parcelaMesAnterior, indiceDoMes, correcaoPeriodo, correcaoLatente, parcelaMesCorrente;
+    var periodoN,
+        periodoCalendario,
+        boolCorrige,
+        boolCorrigeMesAnterior,
+        parcelaMesAnterior,
+        indiceDoMes,
+        indiceDoMesAnterior,
+        correcaoPeriodo,
+        correcaoLatente,
+        correcaoLatenteMesAnterior,
+        parcelaMesCorrente;
     var fluxo_saldoInicialPeriodo,
         fluxo_correcaoPeriodo,
         fluxo_saldoParcialCorrigidoPeriodo,
@@ -109,74 +125,90 @@ async function geraFluxoFinanciamento(valorFinanciado, mesInicialDoFluxo, sistem
         fluxo_jurosPagosPeriodo,
         fluxo_amortizacaoPeriodo,
         fluxo_saldoFinalPeriodo;
-    for (let i = 0; i < numeroPrestacoes; i++) {
-        periodoN = 0;
+    const indicesDeCorrecaoHistoricos = await ProcessaDadosFinanciamentoRepository.getIndiceInflacao(indiceDeCorrecao);
+
+    for (var i = 0; i < numeroPrestacoes; i++) {
+        periodoN = i;
         periodoCalendario = i === 0 ? mesInicialDoFluxo : incrementaUmMesCalendario(periodoCalendario);
-        boolCorrige = i === 0 ? false : true;
-        parcelaMesAnterior = i === 0 ? valorPrimeiraParcela : parcelaMesCorrente;
-        indiceDoMes = await ProcessaDadosFinanciamentoRepository.getIndiceInflacao(indiceDeCorrecao, periodoCalendario);
-        console.log(indiceDoMes);
-        correcaoPeriodo = i === 0 ? 0 : indiceDoMes / indiceDoMesAnterior - 1;
-        correcaoLatente = i === 0 ? 0 : boolCorrigeMesAnterior === false ? (1 + correcaoLatenteMesAnterior) * (1 + correcaoPeriodo) - 1 : correcaoPeriodo;
-        fluxo_saldoInicialPeriodo = i === 0 ? valorFinanciado : fluxo_saldoFinalPeriodo;
-        fluxo_correcaoPeriodo = boolCorrige ? fluxo_saldoInicialPeriodo * correcaoLatente : 0;
-        fluxo_saldoParcialCorrigidoPeriodo = fluxo_saldoInicialPeriodo + fluxo_correcaoPeriodo;
-        if (sistemaFinanciamento === "PRICE") {
-            if (boolCorrige) {
-                parcelaMesCorrente = parcelaMesAnterior * (1 + correcaoLatente);
-            } else {
-                parcelaMesCorrente = parcelaMesAnterior;
+        if (new Date(periodoCalendario) <= new Date(dataAtual)) {
+            boolCorrige = i === 0 ? false : true;
+            parcelaMesAnterior = i === 0 ? valorPrimeiraParcela : parcelaMesCorrente;
+
+            indiceDoMesAnterior = i === 0 ? 0 : indiceDoMes;
+            try {
+                indiceDoMes = parseFloat(indicesDeCorrecaoHistoricos.filter((a) => a.date == periodoCalendario)[0][indiceDeCorrecao]);
+            } catch {
+                indiceDoMes = indiceDoMesAnterior;
             }
-        } else if (sistemaFinanciamento === "SAC") {
-            parcelaMesCorrente = fluxo_saldoParcialCorrigidoPeriodo / (numeroPrestacoes - i) + taxaDeJuros * fluxo_saldoParcialCorrigidoPeriodo;
+            correcaoPeriodo = i === 0 ? 0 : indiceDoMes / indiceDoMesAnterior - 1;
+            correcaoLatente = i === 0 ? 0 : boolCorrigeMesAnterior === false ? (1 + correcaoLatenteMesAnterior) * (1 + correcaoPeriodo) - 1 : correcaoPeriodo;
+            fluxo_saldoInicialPeriodo = i === 0 ? valorFinanciado : fluxo_saldoFinalPeriodo;
+            fluxo_correcaoPeriodo = boolCorrige ? fluxo_saldoInicialPeriodo * correcaoLatente : 0;
+            fluxo_saldoParcialCorrigidoPeriodo = fluxo_saldoInicialPeriodo + fluxo_correcaoPeriodo;
+            if (sistemaFinanciamento === "price") {
+                if (boolCorrige) {
+                    parcelaMesCorrente = parcelaMesAnterior * (1 + correcaoLatente);
+                } else {
+                    parcelaMesCorrente = parcelaMesAnterior;
+                }
+            } else if (sistemaFinanciamento === "sac") {
+                parcelaMesCorrente = fluxo_saldoParcialCorrigidoPeriodo / (numeroPrestacoes - i) + taxaDeJuros * fluxo_saldoParcialCorrigidoPeriodo;
+            }
+            boolCorrigeMesAnterior = i === 0 ? 0 : boolCorrige;
+            correcaoLatenteMesAnterior = correcaoLatente;
+
+            fluxo_jurosIncorridosPeriodo = fluxo_saldoParcialCorrigidoPeriodo * taxaDeJuros;
+            fluxo_saldoParcialCorrigidoComJurosPeriodo = fluxo_saldoParcialCorrigidoPeriodo + fluxo_jurosIncorridosPeriodo;
+            fluxo_jurosPagosPeriodo = -fluxo_jurosIncorridosPeriodo;
+            fluxo_amortizacaoPeriodo = -parcelaMesCorrente - fluxo_jurosPagosPeriodo;
+            fluxo_saldoFinalPeriodo = fluxo_saldoParcialCorrigidoComJurosPeriodo + fluxo_jurosPagosPeriodo + fluxo_amortizacaoPeriodo;
+
+            fluxoFinanciamento.push({
+                periodoN,
+                periodoCalendario,
+                boolCorrige,
+                parcelaMesAnterior,
+                indiceDoMes,
+                correcaoPeriodo,
+                correcaoLatente,
+                parcelaMesCorrente,
+                fluxo_saldoInicialPeriodo,
+                fluxo_correcaoPeriodo,
+                fluxo_saldoParcialCorrigidoPeriodo,
+                fluxo_jurosIncorridosPeriodo,
+                fluxo_saldoParcialCorrigidoComJurosPeriodo,
+                fluxo_jurosPagosPeriodo,
+                fluxo_amortizacaoPeriodo,
+                fluxo_saldoFinalPeriodo,
+            });
         }
-        indiceDoMesAnterior = i === 0 ? 0 : indiceDoMes;
-        boolCorrigeMesAnterior = i === 0 ? 0 : boolCorrige;
-        correcaoLatenteMesAnterior = correcaoLatente;
-
-        fluxo_jurosIncorridosPeriodo = fluxo_saldoParcialCorrigidoPeriodo * taxaDeJuros;
-        fluxo_saldoParcialCorrigidoComJurosPeriodo = fluxo_saldoParcialCorrigidoPeriodo + fluxo_jurosIncorridosPeriodo;
-        fluxo_jurosPagosPeriodo = -fluxo_jurosIncorridosPeriodo;
-        fluxo_amortizacaoPeriodo = -parcelaMesCorrente - fluxo_jurosPagosPeriodo;
-        fluxo_saldoFinalPeriodo = fluxo_saldoParcialCorrigidoComJurosPeriodo + fluxo_jurosPagosPeriodo + fluxo_amortizacaoPeriodo;
-
-        fluxoFinanciamento.push({
-            periodoN,
-            periodoCalendario,
-            boolCorrige,
-            parcelaMesAnterior,
-            indiceDoMes,
-            correcaoPeriodo,
-            correcaoLatente,
-            parcelaMesCorrente,
-            fluxo_saldoInicialPeriodo,
-            fluxo_correcaoPeriodo,
-            fluxo_saldoParcialCorrigidoPeriodo,
-            fluxo_jurosIncorridosPeriodo,
-            fluxo_saldoParcialCorrigidoComJurosPeriodo,
-            fluxo_jurosPagosPeriodo,
-            fluxo_amortizacaoPeriodo,
-            fluxo_saldoFinalPeriodo,
-        });
     }
     return fluxoFinanciamento;
 }
 
 function retornaParcelaNaData(fluxoFinanciamento, data) {
-    console.log(fluxoFinanciamento);
     const fluxoNaData = fluxoFinanciamento.filter((a) => a.periodoCalendario === data);
-    return fluxoNaData.parcelaMesCorrente;
+    return fluxoNaData[0].parcelaMesCorrente;
 }
 
 function retornaSomaValorPagoNoIntervalo(fluxoFinanciamento, mesInicialIntervalo, mesFinalIntervalo) {
-    const fluxoDentroDoIntervalo = fluxoFinanciamento.filter((fluxo) => fluxo.periodoCalendario >= mesInicialIntervalo && fluxo.periodoCalendario <= mesFinalIntervalo);
-    const somaValorPago = fluxoDentroDoIntervalo.reduce((acc, fluxoMes) => acc - fluxoMes.fluxo_jurosPagosPeriodo - fluxoMes.fluxo_amortizacaoPeriodo, 0);
+    const fluxoDentroDoIntervalo = fluxoFinanciamento.filter(
+        (fluxo) => new Date(fluxo.periodoCalendario) >= new Date(mesInicialIntervalo) && new Date(fluxo.periodoCalendario) <= new Date(mesFinalIntervalo)
+    );
+    const somaValorPago = fluxoDentroDoIntervalo.reduce((acc, fluxoMes) => {
+        return acc - fluxoMes.fluxo_jurosPagosPeriodo - fluxoMes.fluxo_amortizacaoPeriodo;
+    }, 0);
     return somaValorPago;
 }
 
 function retornaSaldoDevedorNaData(fluxoFinanciamento, data) {
     const fluxoNaData = fluxoFinanciamento.filter((a) => a.periodoCalendario === data);
-    return fluxoNaData.fluxo_saldoFinalPeriodo;
+    let saldoDevedor = fluxoNaData[0].fluxo_saldoFinalPeriodo;
+    if (Math.abs(saldoDevedor.toFixed(2) == 0)) {
+        //usado para tratar problemas comuns de -0,00
+        saldoDevedor = 0;
+    }
+    return saldoDevedor;
 }
 
 function incrementaUmMesCalendario(periodoCalendario) {
