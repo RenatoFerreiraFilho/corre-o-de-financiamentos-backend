@@ -1,6 +1,10 @@
 import express from "express";
 import cors from "cors";
 import winston from "winston";
+import dotenv from "dotenv";
+
+//importação das variáveis de ambiente:
+dotenv.config();
 
 /* Configurações do winston: */
 const { combine, timestamp, label, printf } = winston.format;
