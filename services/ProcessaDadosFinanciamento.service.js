@@ -16,6 +16,8 @@ async function createProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
     const dataAtual = "2024-03-01"; //usada para gerar o valor da parcela atual, e para parar o fluxo de financiamento
     //usar data que seja garantida a presença de índice de correção
 
+    const indicesDeCorrecaoHistoricos = await ProcessaDadosFinanciamentoRepository.getIndiceInflacao(ProcessaDadosFinanciamento.indiceCorrecao);
+    console.log(indicesDeCorrecaoHistoricos);
     const fluxoFinanciamentoCincoAnos = await geraFluxoFinanciamento(
         dataAtual,
         valorFinanciado,
@@ -24,7 +26,8 @@ async function createProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
         taxaDeJurosMensal,
         ProcessaDadosFinanciamento.numeroPrestacoes,
         ProcessaDadosFinanciamento.indiceCorrecao,
-        ProcessaDadosFinanciamento.valorPrimeiraParcela
+        ProcessaDadosFinanciamento.valorPrimeiraParcela,
+        indicesDeCorrecaoHistoricos
     );
     const fluxoFinanciamentoDezAnos = await geraFluxoFinanciamento(
         dataAtual,
@@ -34,7 +37,8 @@ async function createProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
         taxaDeJurosMensal,
         ProcessaDadosFinanciamento.numeroPrestacoes,
         ProcessaDadosFinanciamento.indiceCorrecao,
-        ProcessaDadosFinanciamento.valorPrimeiraParcela
+        ProcessaDadosFinanciamento.valorPrimeiraParcela,
+        indicesDeCorrecaoHistoricos
     );
     const fluxoFinanciamentoQuinzeAnos = await geraFluxoFinanciamento(
         dataAtual,
@@ -44,7 +48,8 @@ async function createProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
         taxaDeJurosMensal,
         ProcessaDadosFinanciamento.numeroPrestacoes,
         ProcessaDadosFinanciamento.indiceCorrecao,
-        ProcessaDadosFinanciamento.valorPrimeiraParcela
+        ProcessaDadosFinanciamento.valorPrimeiraParcela,
+        indicesDeCorrecaoHistoricos
     );
 
     //Resultados para cinco anos:
@@ -104,7 +109,17 @@ function calculaValorFinanciado(sistemaDeFinanciamento, taxaDeJuros, numeroPrest
     }
 }
 
-async function geraFluxoFinanciamento(dataAtual, valorFinanciado, mesInicialDoFluxo, sistemaFinanciamento, taxaDeJuros, numeroPrestacoes, indiceDeCorrecao, valorPrimeiraParcela) {
+async function geraFluxoFinanciamento(
+    dataAtual,
+    valorFinanciado,
+    mesInicialDoFluxo,
+    sistemaFinanciamento,
+    taxaDeJuros,
+    numeroPrestacoes,
+    indiceDeCorrecao,
+    valorPrimeiraParcela,
+    indicesDeCorrecaoHistoricos
+) {
     const fluxoFinanciamento = [];
     var periodoN,
         periodoCalendario,
@@ -125,7 +140,6 @@ async function geraFluxoFinanciamento(dataAtual, valorFinanciado, mesInicialDoFl
         fluxo_jurosPagosPeriodo,
         fluxo_amortizacaoPeriodo,
         fluxo_saldoFinalPeriodo;
-    const indicesDeCorrecaoHistoricos = await ProcessaDadosFinanciamentoRepository.getIndiceInflacao(indiceDeCorrecao);
 
     for (var i = 0; i < numeroPrestacoes; i++) {
         periodoN = i;
