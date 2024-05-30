@@ -17,7 +17,6 @@ async function createProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
     //usar data que seja garantida a presença de índice de correção
 
     const indicesDeCorrecaoHistoricos = await ProcessaDadosFinanciamentoRepository.getIndiceInflacao(ProcessaDadosFinanciamento.indiceCorrecao);
-    console.log(indicesDeCorrecaoHistoricos);
     const fluxoFinanciamentoCincoAnos = await geraFluxoFinanciamento(
         dataAtual,
         valorFinanciado,
@@ -202,7 +201,11 @@ async function geraFluxoFinanciamento(
 
 function retornaParcelaNaData(fluxoFinanciamento, data) {
     const fluxoNaData = fluxoFinanciamento.filter((a) => a.periodoCalendario === data);
-    return fluxoNaData[0].parcelaMesCorrente;
+    if (fluxoNaData.length == 0) {
+        return 0;
+    } else {
+        return fluxoNaData[0].parcelaMesCorrente;
+    }
 }
 
 function retornaSomaValorPagoNoIntervalo(fluxoFinanciamento, mesInicialIntervalo, mesFinalIntervalo) {
@@ -217,7 +220,12 @@ function retornaSomaValorPagoNoIntervalo(fluxoFinanciamento, mesInicialIntervalo
 
 function retornaSaldoDevedorNaData(fluxoFinanciamento, data) {
     const fluxoNaData = fluxoFinanciamento.filter((a) => a.periodoCalendario === data);
-    let saldoDevedor = fluxoNaData[0].fluxo_saldoFinalPeriodo;
+    let saldoDevedor;
+    if (fluxoNaData.length == 0) {
+        saldoDevedor = 0;
+    } else {
+        saldoDevedor = fluxoNaData[0].fluxo_saldoFinalPeriodo;
+    }
     if (Math.abs(saldoDevedor.toFixed(2) == 0)) {
         //usado para tratar problemas comuns de -0,00
         saldoDevedor = 0;
