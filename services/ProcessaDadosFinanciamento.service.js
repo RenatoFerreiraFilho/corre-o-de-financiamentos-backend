@@ -17,6 +17,7 @@ async function createProcessaDadosFinanciamento(ProcessaDadosFinanciamento) {
     //usar data que seja garantida a presença de índice de correção
 
     const indicesDeCorrecaoHistoricos = await ProcessaDadosFinanciamentoRepository.getIndiceInflacao(ProcessaDadosFinanciamento.indiceCorrecao);
+    // console.log(indicesDeCorrecaoHistoricos);
     const fluxoFinanciamentoCincoAnos = await geraFluxoFinanciamento(
         dataAtual,
         valorFinanciado,
@@ -149,7 +150,7 @@ async function geraFluxoFinanciamento(
 
             indiceDoMesAnterior = i === 0 ? 0 : indiceDoMes;
             try {
-                indiceDoMes = parseFloat(indicesDeCorrecaoHistoricos.filter((a) => a.date == periodoCalendario)[0][indiceDeCorrecao]);
+                indiceDoMes = parseFloat(indicesDeCorrecaoHistoricos.filter((a) => a.date.toISOString().split("T")[0] == periodoCalendario)[0][indiceDeCorrecao]);
             } catch {
                 indiceDoMes = indiceDoMesAnterior;
             }
